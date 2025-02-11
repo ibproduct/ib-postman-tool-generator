@@ -1,0 +1,50 @@
+{
+  "name": "ib-postman-tool-generator",
+  "version": "0.1.0",
+  "description": "MCP server for retrieving Postman documentation and generating AI actions",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "ib-postman-tool-generator": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+    "lint": "eslint \"**/*.ts\"",
+    "lint:fix": "eslint \"**/*.ts\" --fix",
+    "test": "echo \"No tests specified yet\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ibproduct/ib-postman-tool-generator.git"
+  },
+  "keywords": [
+    "postman",
+    "documentation",
+    "ai",
+    "mcp",
+    "intelligencebank"
+  ],
+  "author": "IntelligenceBank",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/ibproduct/ib-postman-tool-generator/issues"
+  },
+  "homepage": "https://github.com/ibproduct/ib-postman-tool-generator#readme",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "0.6.0",
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}
