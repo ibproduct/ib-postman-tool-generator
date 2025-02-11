@@ -7,8 +7,8 @@ A Model Context Protocol (MCP) server that provides tools for retrieving documen
 - List and search Postman collections
 - Navigate collection structures
 - Get detailed request information
-- Generate AI actions from Postman requests
-- Support for multiple AI frameworks
+- Generate code actions from Postman requests
+- Optional integration with multiple AI frameworks
 - TypeScript/JavaScript code generation
 
 ## Documentation

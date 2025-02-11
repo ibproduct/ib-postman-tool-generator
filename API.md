@@ -161,7 +161,7 @@ interface GetRequestDetailsOutput {
 
 ### 5. create_action
 
-Generate an AI action from a Postman request.
+Generate a code action from a Postman request. Optionally integrates with AI frameworks if specified.
 
 **Input Schema:**
 ```typescript
@@ -169,7 +169,7 @@ interface CreateActionInput {
   collectionId: string;   // Collection ID
   requestId: string;      // Request ID
   language: 'javascript' | 'typescript';
-  agentFramework: 'openai' | 'mistral' | 'gemini' | 'anthropic' | 'langchain' | 'autogen';
+  agentFramework?: 'openai' | 'mistral' | 'gemini' | 'anthropic' | 'langchain' | 'autogen';  // Optional AI framework integration
 }
 ```
 
