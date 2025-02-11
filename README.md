@@ -42,6 +42,40 @@ See the [Prompt Templates](PROMPTS.md) guide for detailed usage instructions and
 
 ## Development
 
+### Git Workflow
+
+1. Before starting development:
+```bash
+git pull origin main
+npm install  # If dependencies have changed
+```
+
+2. During development:
+- The `.gitignore` file is configured to exclude:
+  - Build artifacts (`build/`, `dist/`)
+  - Dependencies (`node_modules/`)
+  - Environment files (`.env*`)
+  - IDE files (`.vscode/`, `.idea/`)
+  - Logs and debug files
+  - System files (`.DS_Store`, `Thumbs.db`)
+
+3. Committing changes:
+```bash
+git add .  # Stage changes (respects .gitignore)
+git commit -m "type: description
+
+- Bullet points for specific changes
+- Another change"
+```
+
+4. Pushing changes:
+```bash
+git pull origin main  # Get latest changes
+git push origin main  # Push your changes
+```
+
+### Development Server
+
 To run the server in development mode with automatic reloading:
 
 ```bash
