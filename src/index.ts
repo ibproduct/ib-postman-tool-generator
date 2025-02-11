@@ -45,6 +45,7 @@ interface PostmanWorkspace {
   id: string;
   name: string;
   type: string;
+  error?: string;
 }
 
 class PostmanDocsServer {
@@ -184,7 +185,7 @@ class PostmanDocsServer {
                 description: 'AI agent framework to use',
               },
             },
-            required: ['collectionId', 'requestId', 'language', 'agentFramework'],
+            required: ['collectionId', 'requestId', 'language'],
           },
         },
       ],
@@ -213,15 +214,41 @@ class PostmanDocsServer {
 
   private async getWorkspaceInfo(workspaceId: string): Promise<PostmanWorkspace | null> {
     try {
-      const response = await this.axiosInstance.get(`/workspaces/${workspaceId}`);
-      const workspace = response.data.workspace;
+      // First try to list all workspaces
+      const response = await this.axiosInstance.get('/workspaces');
+      const workspaces = response.data?.workspaces;
+      
+      if (!workspaces) {
+        throw new Error('No workspaces found in response');
+      }
+
+      // Find the workspace that contains our collection
+      const workspace = workspaces.find((w: any) => {
+        // Check if this workspace contains our collection ID
+        return w.collections?.some((c: any) => c.id === workspaceId || c.uid?.startsWith(workspaceId));
+      });
+
+      if (!workspace) {
+        console.error(`No workspace found containing collection from workspace ID ${workspaceId}`);
+        return null;
+      }
+
       return {
         id: workspace.id,
         name: workspace.name,
-        type: workspace.type,
+        type: workspace.type || 'personal'
       };
     } catch (error) {
-      console.error(`Error fetching workspace info: ${error}`);
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status;
+        if (status === 401) {
+          console.error('Unauthorized: Check your Postman API key');
+        } else {
+          console.error(`Error fetching workspaces: ${error.response?.data?.error || error.message}`);
+        }
+      } else {
+        console.error(`Unexpected error fetching workspaces: ${error}`);
+      }
       return null;
     }
   }
@@ -241,15 +268,7 @@ class PostmanDocsServer {
           id: col.uid,
           name: col.name,
           updatedAt: col.updatedAt,
-          workspace: workspace ? {
-            id: workspace.id,
-            name: workspace.name,
-            type: workspace.type,
-          } : {
-            id: workspaceId,
-            name: 'Unknown',
-            type: 'unknown',
-          },
+          workspace: workspace || null,
         };
       }));
 
@@ -304,15 +323,7 @@ class PostmanDocsServer {
           {
             type: 'text',
             text: JSON.stringify({
-              workspace: workspace ? {
-                id: workspace.id,
-                name: workspace.name,
-                type: workspace.type,
-              } : {
-                id: workspaceId,
-                name: 'Unknown',
-                type: 'unknown',
-              },
+              workspace: workspace || null,
               collection: {
                 id: args.collectionId,
                 name: collection.info.name,
@@ -401,15 +412,7 @@ class PostmanDocsServer {
           {
             type: 'text',
             text: JSON.stringify({
-              workspace: workspace ? {
-                id: workspace.id,
-                name: workspace.name,
-                type: workspace.type,
-              } : {
-                id: workspaceId,
-                name: 'Unknown',
-                type: 'unknown',
-              },
+              workspace: workspace || null,
               collection: {
                 id: args.collectionId,
                 name: collection.info.name,
@@ -558,10 +561,10 @@ class PostmanDocsServer {
   }
 
   private async handleCreateAction(args: any): Promise<any> {
-    if (!args?.collectionId || !args?.requestId || !args?.language || !args?.agentFramework) {
+    if (!args?.collectionId || !args?.requestId || !args?.language) {
       throw new McpError(
         ErrorCode.InvalidParams,
-        'Missing required parameters: collectionId, requestId, language, agentFramework'
+        'Missing required parameters: collectionId, requestId, language'
       );
     }
 
@@ -642,15 +645,17 @@ class PostmanDocsServer {
     let code = '';
     const isTypescript = language === 'typescript';
 
-    // Generate imports based on framework
-    switch (framework) {
-      case 'openai':
-        code += `import OpenAI from 'openai';\n\n`;
-        break;
-      case 'anthropic':
-        code += `import Anthropic from '@anthropic-ai/sdk';\n\n`;
-        break;
-      // Add other frameworks as needed
+    // Add framework-specific imports if framework is specified
+    if (framework) {
+      switch (framework) {
+        case 'openai':
+          code += `import OpenAI from 'openai';\n\n`;
+          break;
+        case 'anthropic':
+          code += `import Anthropic from '@anthropic-ai/sdk';\n\n`;
+          break;
+        // Add other frameworks as needed
+      }
     }
 
     // Generate function signature
