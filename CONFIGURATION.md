@@ -9,9 +9,9 @@ This document outlines all configuration options for the IntelligenceBank Postma
 **Required**: Yes  
 **Environment Variable**: `POSTMAN_API_KEY`
 
-The Postman API key is required for authenticating requests to the Postman API. To obtain an API key:
+The Postman API key is required for authenticating requests to the Postman API. To obtain an API key, use the shared IntelligenceBank Postman account on TPM, or ask product@ for assistance:
 
-1. Log in to your Postman account
+1. Log in to the IntelligenceBank Postman account.
 2. Go to: https://www.postman.com/settings/me/api-keys
 3. Click "Generate API Key"
 4. Required scopes:

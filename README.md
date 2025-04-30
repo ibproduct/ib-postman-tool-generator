@@ -13,8 +13,10 @@ A Model Context Protocol (MCP) server that provides tools for retrieving documen
 
 ## Documentation
 
-- [Configuration Guide](CONFIGURATION.md)
-- [Prompt Templates](PROMPTS.md)
+- [API Reference](API.md) - Detailed information about server tools and data structures
+- [Configuration Guide](CONFIGURATION.md) - Server setup and configuration options
+- [Prompt Templates](PROMPTS.md) - Examples and templates for using the tools
+- [Update Instructions](UPDATING.md) - How to update your MCP server installation
 
 ## Installation
 
