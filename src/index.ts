@@ -48,10 +48,19 @@ interface PostmanWorkspace {
   error?: string;
 }
 
+// Hardcoded collection IDs for IntelligenceBank APIs
+const IB_COLLECTION_IDS = {
+  prod: '720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db',    // IntelligenceBank Public API
+  staging: '720164-770480e5-494b-4b63-a6a7-c376624eba71'  // IB API Staging (Internal Use Only)
+};
+
+type Environment = 'prod' | 'staging';
+
 class PostmanDocsServer {
   private server: Server;
   private axiosInstance;
   private API_KEY: string;
+  private environment: Environment;
 
   constructor() {
     const apiKey = process.env.POSTMAN_API_KEY;
@@ -59,11 +68,15 @@ class PostmanDocsServer {
       throw new Error('POSTMAN_API_KEY environment variable is required');
     }
     this.API_KEY = apiKey;
+    
+    // Default to 'prod' if not specified
+    this.environment = (process.env.IB_API_ENVIRONMENT as Environment) || 'prod';
+    console.log(`Using ${this.environment} environment with collection ID: ${this.getCollectionId()}`);
 
     this.server = new Server(
       {
         name: 'ib-postman-tool-generator',
-        version: '0.1.0',
+        version: '0.2.0',
       },
       {
         capabilities: {
@@ -88,32 +101,19 @@ class PostmanDocsServer {
     });
   }
 
+  private getCollectionId(): string {
+    return IB_COLLECTION_IDS[this.environment];
+  }
+
   private setupToolHandlers() {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         {
-          name: 'list_collections',
-          description: 'List all available Postman collections',
+          name: 'ib_api_search_collection',
+          description: 'Search within the IntelligenceBank API collection for folders or requests by name',
           inputSchema: {
             type: 'object',
             properties: {
-              workspace: {
-                type: 'string',
-                description: 'Optional: Workspace ID to filter collections',
-              },
-            },
-          },
-        },
-        {
-          name: 'search_collection',
-          description: 'Search within a collection for folders or requests by name',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              collectionId: {
-                type: 'string',
-                description: 'The Postman collection ID',
-              },
               query: {
                 type: 'string',
                 description: 'Search query to match against folder/request names',
@@ -125,58 +125,44 @@ class PostmanDocsServer {
                 default: 'all',
               },
             },
-            required: ['collectionId', 'query'],
+            required: ['query'],
           },
         },
         {
-          name: 'get_collection_structure',
-          description: 'Get the folder structure and request IDs for a collection',
+          name: 'ib_api_get_collection_structure',
+          description: 'Get the folder structure and request IDs for the IntelligenceBank API collection',
           inputSchema: {
             type: 'object',
-            properties: {
-              collectionId: {
-                type: 'string',
-                description: 'The Postman collection ID',
-              },
-            },
-            required: ['collectionId'],
+            properties: {},
           },
         },
         {
-          name: 'get_request_details',
-          description: 'Get detailed information about a specific request',
+          name: 'ib_api_get_request_details',
+          description: 'Get detailed information about a specific request in the IntelligenceBank API collection',
           inputSchema: {
             type: 'object',
             properties: {
-              collectionId: {
-                type: 'string',
-                description: 'The Postman collection ID',
-              },
               requestId: {
                 type: 'string',
                 description: 'The request ID',
               },
             },
-            required: ['collectionId', 'requestId'],
+            required: ['requestId'],
           },
         },
         {
-          name: 'create_action',
-          description: 'Generate an AI action from a Postman request',
+          name: 'ib_api_create_action',
+          description: 'Generate an AI action from a Postman request in the IntelligenceBank API collection',
           inputSchema: {
             type: 'object',
             properties: {
-              collectionId: {
-                type: 'string',
-                description: 'The Postman collection ID',
-              },
               requestId: {
                 type: 'string',
                 description: 'The ID of the request to generate an action for',
               },
               language: {
                 type: 'string',
-                enum: ['javascript', 'typescript'],
+                enum: ['javascript', 'typescript', 'python'],
                 description: 'Programming language to use',
               },
               agentFramework: {
@@ -185,7 +171,7 @@ class PostmanDocsServer {
                 description: 'AI agent framework to use',
               },
             },
-            required: ['collectionId', 'requestId', 'language'],
+            required: ['requestId', 'language'],
           },
         },
       ],
@@ -193,16 +179,25 @@ class PostmanDocsServer {
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       switch (request.params.name) {
-        case 'list_collections':
-          return this.handleListCollections(request.params.arguments);
-        case 'search_collection':
-          return this.handleSearchCollection(request.params.arguments);
-        case 'get_collection_structure':
-          return this.handleGetCollectionStructure(request.params.arguments);
-        case 'get_request_details':
-          return this.handleGetRequestDetails(request.params.arguments);
-        case 'create_action':
-          return this.handleCreateAction(request.params.arguments);
+        case 'ib_api_search_collection':
+          return this.handleSearchCollection({
+            ...request.params.arguments,
+            collectionId: this.getCollectionId()
+          });
+        case 'ib_api_get_collection_structure':
+          return this.handleGetCollectionStructure({
+            collectionId: this.getCollectionId()
+          });
+        case 'ib_api_get_request_details':
+          return this.handleGetRequestDetails({
+            ...request.params.arguments,
+            collectionId: this.getCollectionId()
+          });
+        case 'ib_api_create_action':
+          return this.handleCreateAction({
+            ...request.params.arguments,
+            collectionId: this.getCollectionId()
+          });
         default:
           throw new McpError(
             ErrorCode.MethodNotFound,
@@ -253,48 +248,7 @@ class PostmanDocsServer {
     }
   }
 
-  private async handleListCollections(args: any): Promise<any> {
-    try {
-      const endpoint = args?.workspace 
-        ? `/workspaces/${args.workspace}/collections`
-        : '/collections';
-      
-      const response = await this.axiosInstance.get(endpoint);
-      const collections = await Promise.all(response.data.collections.map(async (col: any) => {
-        const workspaceId = col.workspace || col.uid.split('-')[0];
-        const workspace = await this.getWorkspaceInfo(workspaceId);
-        
-        return {
-          id: col.uid,
-          name: col.name,
-          updatedAt: col.updatedAt,
-          workspace: workspace || null,
-        };
-      }));
-
-      return {
-        content: [
-          {
-            type: 'text',
-            text: JSON.stringify(collections, null, 2),
-          },
-        ],
-      };
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        return {
-          content: [
-            {
-              type: 'text',
-              text: `Error listing collections: ${error.response?.data?.error || error.message}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-      throw error;
-    }
-  }
+  // handleListCollections method has been removed as it's no longer needed
 
   private async handleSearchCollection(args: any): Promise<any> {
     if (!args?.collectionId || !args?.query) {
@@ -642,8 +596,103 @@ class PostmanDocsServer {
     const headers = request.header || [];
     const body = request.body;
 
+    if (language === 'python') {
+      return this.generatePythonCode(name, request, framework);
+    }
+
+    return this.generateJavaScriptCode(name, request, language === 'typescript', framework);
+  }
+
+  private generatePythonCode(
+    name: string,
+    request: NonNullable<PostmanItem['request']>,
+    framework?: string
+  ): string {
+    const baseUrl = request.url.host.join('.');
+    const path = request.url.path.join('/');
+    const method = request.method.toLowerCase();
+    const headers = request.header || [];
+    const body = request.body;
+
+    let code = 'import requests\n';
+    code += 'from typing import Dict, Any\n';
+
+    // Add framework-specific imports if framework is specified
+    if (framework) {
+      switch (framework) {
+        case 'openai':
+          code += 'from openai import OpenAI\n';
+          break;
+        case 'anthropic':
+          code += 'from anthropic import Anthropic\n';
+          break;
+        // Add other frameworks as needed
+      }
+    }
+    code += '\n';
+
+    // Generate the main function with type hints
+    code += `async def ${name}(params: Dict[str, Any]) -> Dict[str, Any]:\n`;
+    code += `    url = '${baseUrl}/${path}'\n`;
+    
+    // Add headers
+    if (headers.length > 0) {
+      code += `    headers = ${JSON.stringify(
+        headers.reduce((acc: any, h: any) => ({ ...acc, [h.key]: h.value }), {}),
+        null,
+        4
+      ).replace(/^/gm, '    ')}\n`;
+    }
+
+    // Add request body if present
+    if (body) {
+      switch (body.mode) {
+        case 'raw':
+          code += `    request_body = ${body.raw || '{}'}\n`;
+          break;
+        case 'urlencoded':
+          code += '    request_body = {}\n';
+          body.urlencoded?.forEach((param: any) => {
+            code += `    request_body['${param.key}'] = params['${param.key}']\n`;
+          });
+          break;
+      }
+    }
+
+    // Generate the requests call
+    code += '\n    response = requests.request(\n';
+    code += `        method='${method}',\n`;
+    code += `        url=url,\n`;
+    if (headers.length > 0) code += '        headers=headers,\n';
+    if (body) {
+      if (body.mode === 'urlencoded') {
+        code += '        data=request_body,\n';
+      } else {
+        code += '        json=request_body,\n';
+      }
+    }
+    code += '    )\n\n';
+    
+    code += '    if not response.ok:\n';
+    code += "        raise Exception(f'HTTP error! status: {response.status_code}')\n\n";
+    code += '    return response.json()\n';
+
+    return code;
+  }
+
+  private generateJavaScriptCode(
+    name: string,
+    request: NonNullable<PostmanItem['request']>,
+    isTypescript: boolean,
+    framework?: string
+  ): string {
+    const baseUrl = request.url.host.join('.');
+    const path = request.url.path.join('/');
+    const method = request.method.toLowerCase();
+    const headers = request.header || [];
+    const body = request.body;
+
     let code = '';
-    const isTypescript = language === 'typescript';
 
     // Add framework-specific imports if framework is specified
     if (framework) {

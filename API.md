@@ -2,43 +2,24 @@
 
 This document provides detailed information about the MCP server's API endpoints and data structures.
 
+## Environment Configuration
+
+The server is configured to work exclusively with IntelligenceBank Postman collections. The collection used depends on the environment setting:
+
+- **prod** (default): Uses the IntelligenceBank Public API collection (`720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db`)
+- **staging**: Uses the IB API Staging collection (`720164-770480e5-494b-4b63-a6a7-c376624eba71`)
+
+The environment is configured in the MCP settings file via the `IB_API_ENVIRONMENT` environment variable.
+
 ## Tools
 
-### 1. list_collections
+### 1. ib_api_search_collection
 
-Lists all available Postman collections.
-
-**Input Schema:**
-```typescript
-interface ListCollectionsInput {
-  workspace?: string; // Optional workspace ID to filter collections
-}
-```
-
-**Output Schema:**
-```typescript
-interface ListCollectionsOutput {
-  collections: Array<{
-    id: string;          // Collection ID
-    name: string;        // Collection name
-    updatedAt: string;   // Last update timestamp
-    workspace: {
-      id: string;        // Workspace ID
-      name: string;      // Workspace name
-      type: string;      // Workspace type (team, personal)
-    };
-  }>;
-}
-```
-
-### 2. search_collection
-
-Search within a collection for folders or requests by name.
+Search within the IntelligenceBank API collection for folders or requests by name.
 
 **Input Schema:**
 ```typescript
 interface SearchCollectionInput {
-  collectionId: string;                      // Collection ID
   query: string;                            // Search query
   type?: 'all' | 'folder' | 'request';      // Type filter (default: 'all')
 }
@@ -66,14 +47,14 @@ interface SearchCollectionOutput {
 }
 ```
 
-### 3. get_collection_structure
+### 2. ib_api_get_collection_structure
 
-Get the folder structure and request IDs for a collection.
+Get the folder structure and request IDs for the IntelligenceBank API collection.
 
 **Input Schema:**
 ```typescript
 interface GetCollectionStructureInput {
-  collectionId: string;  // Collection ID
+  // No parameters required - uses the collection determined by environment
 }
 ```
 
@@ -112,14 +93,13 @@ interface GetCollectionStructureOutput {
 }
 ```
 
-### 4. get_request_details
+### 3. ib_api_get_request_details
 
-Get detailed information about a specific request.
+Get detailed information about a specific request in the IntelligenceBank API collection.
 
 **Input Schema:**
 ```typescript
 interface GetRequestDetailsInput {
-  collectionId: string;  // Collection ID
   requestId: string;     // Request ID
 }
 ```
@@ -159,16 +139,15 @@ interface GetRequestDetailsOutput {
 }
 ```
 
-### 5. create_action
+### 4. ib_api_create_action
 
-Generate a code action from a Postman request. Optionally integrates with AI frameworks if specified.
+Generate a code action from a Postman request in the IntelligenceBank API collection. Optionally integrates with AI frameworks if specified.
 
 **Input Schema:**
 ```typescript
 interface CreateActionInput {
-  collectionId: string;   // Collection ID
   requestId: string;      // Request ID
-  language: 'javascript' | 'typescript';
+  language: 'javascript' | 'typescript' | 'python';
   agentFramework?: 'openai' | 'mistral' | 'gemini' | 'anthropic' | 'langchain' | 'autogen';  // Optional AI framework integration
 }
 ```

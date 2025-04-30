@@ -1,73 +1,47 @@
-# Prompt Templates for Postman Documentation MCP Server
+# Prompt Templates for IntelligenceBank API MCP Server
 
-This guide provides structured prompt templates for interacting with the Postman Documentation MCP Server. Each template includes variables to customize and example usage.
+This guide provides structured prompt templates for interacting with the IntelligenceBank API MCP Server. Each template includes variables to customize and example usage.
+
+## Environment Configuration
+
+This server is configured to work exclusively with specific IntelligenceBank Postman collections:
+
+- **prod** (default): IntelligenceBank Public API collection
+- **staging**: IB API Staging collection
+
+To switch environments, update the `IB_API_ENVIRONMENT` variable in the MCP settings file.
 
 ## Variables Legend
 
 Variables in templates are denoted by `{variable_name}`. Available variables:
 
-- `{collection_id}`: The Postman collection ID (e.g., "720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db")
-- `{workspace_id}`: The Postman workspace ID (e.g., "720164")
-- `{request_id}`: The specific request ID within a collection (e.g., "req-123")
-- `{search_term}`: Term to search for in collection (e.g., "authentication", "user")
+- `{request_id}`: The specific request ID within the collection (e.g., "req-123")
+- `{search_term}`: Term to search for in the collection (e.g., "authentication", "user")
 - `{type}`: Type of items to search for ("all", "folder", or "request")
 - `{framework}`: AI framework to use ("openai", "mistral", "gemini", "anthropic", "langchain", "autogen")
-- `{language}`: Programming language to use ("javascript", "typescript")
+- `{language}`: Programming language to use ("javascript", "typescript", "python")
 
-## 1. List Collections
+## 1. Search Collection (ib_api_search_collection)
 
-### Base Template
-```
-Show me all Postman collections.
-```
-
-### With Workspace Filter Template
-```
-Show me all Postman collections in workspace {workspace_id}.
-```
-
-### Example
-```
-Show me all Postman collections in workspace 720164.
-```
-
-Expected Response:
-```json
-{
-  "collections": [
-    {
-      "id": "720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db",
-      "name": "IntelligenceBank Public API",
-      "updatedAt": "2024-02-11T10:00:00Z",
-      "workspace": {
-        "id": "720164",
-        "name": "IntelligenceBank",
-        "type": "team"
-      }
-    }
-  ]
-}
-```
-
-## 2. Search Collection
+Search within the IntelligenceBank API collection for folders or requests by name.
 
 ### Base Template
 ```
-Find {search_term} in collection {collection_id}.
+Find {search_term} in the IntelligenceBank API.
 ```
 
 ### With Type Filter Template
 ```
-Find {search_term} in collection {collection_id}, show only {type}.
+Find {search_term} in the IntelligenceBank API, show only {type}.
 ```
 
 ### Examples
 ```
-Find "authentication" in collection 720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db.
+Find "authentication" in the IntelligenceBank API.
 ```
 
 ```
-Find "user" in collection 720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db, show only request.
+Find "user" in the IntelligenceBank API, show only request.
 ```
 
 Expected Response:
@@ -94,16 +68,13 @@ Expected Response:
 }
 ```
 
-## 3. Get Collection Structure
+## 2. Get Collection Structure (ib_api_get_collection_structure)
+
+Get the folder structure and request IDs for the IntelligenceBank API collection.
 
 ### Base Template
 ```
-Show the structure of collection {collection_id}.
-```
-
-### Example
-```
-Show the structure of collection 720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db.
+Show the structure of the IntelligenceBank API collection.
 ```
 
 Expected Response:
@@ -138,16 +109,18 @@ Expected Response:
 }
 ```
 
-## 4. Get Request Details
+## 3. Get Request Details (ib_api_get_request_details)
+
+Get detailed information about a specific request in the IntelligenceBank API collection.
 
 ### Base Template
 ```
-Get details of request {request_id} from collection {collection_id}.
+Get details of request {request_id}.
 ```
 
 ### Example
 ```
-Get details of request req-123 from collection 720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db.
+Get details of request req-123.
 ```
 
 Expected Response:
@@ -178,20 +151,22 @@ Expected Response:
 }
 ```
 
-## 5. Create Action
+## 4. Create Action (ib_api_create_action)
+
+Generate a code action from a Postman request in the IntelligenceBank API collection.
 
 ### Base Template
 ```
-Create a {framework} action in {language} for request {request_id} from collection {collection_id}.
+Create a {framework} action in {language} for request {request_id}.
 ```
 
 ### Examples
 ```
-Create an openai action in typescript for request req-123 from collection 720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db.
+Create an openai action in typescript for request req-123.
 ```
 
 ```
-Create a langchain action in javascript for request req-123 from collection 720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db.
+Create a langchain action in javascript for request req-123.
 ```
 
 Expected Response:
@@ -214,47 +189,30 @@ Expected Response:
 
 ### Finding and Using a Request
 
-1. List collections:
+1. Get collection structure:
 ```
-Show me all Postman collections.
+Show the structure of the IntelligenceBank API collection.
 ```
 
-2. Search for request:
+2. Search for specific requests:
 ```
-Find "login" in collection {collection_id_from_step_1}.
+Find "login" in the IntelligenceBank API.
 ```
 
 3. Get request details:
 ```
-Get details of request {request_id_from_step_2} from collection {collection_id_from_step_1}.
+Get details of request {request_id_from_step_2}.
 ```
 
 4. Generate action:
 ```
-Create an openai action in typescript for request {request_id_from_step_2} from collection {collection_id_from_step_1}.
-```
-
-### Exploring Collection Structure
-
-1. List collections:
-```
-Show me all Postman collections.
-```
-
-2. Get structure:
-```
-Show the structure of collection {collection_id_from_step_1}.
-```
-
-3. Get specific request details:
-```
-Get details of request {request_id_from_structure} from collection {collection_id_from_step_1}.
+Create an openai action in typescript for request {request_id_from_step_2}.
 ```
 
 ## Tips for Effective Prompting
 
 1. Be specific about what you're looking for
-2. Use the collection ID and request ID from previous responses
+2. Use the request ID from previous responses
 3. Specify the framework and language when generating actions
 4. Use the full path when referencing nested requests
 5. Include type filters when searching to narrow down results
@@ -263,16 +221,16 @@ Get details of request {request_id_from_structure} from collection {collection_i
 
 If you encounter errors, try these prompts:
 
-1. For invalid collection ID:
+1. For invalid request ID:
 ```
-Show me all Postman collections to get the correct ID.
-```
-
-2. For invalid request ID:
-```
-Show the structure of collection {collection_id} to find the correct request ID.
+Show the structure of the IntelligenceBank API collection to find the correct request ID.
 ```
 
-3. For search with no results:
+2. For search with no results:
 ```
-Show the structure of collection {collection_id} to see available requests.
+Show the structure of the IntelligenceBank API collection to see available requests.
+```
+
+3. For environment issues:
+```
+Check the IB_API_ENVIRONMENT setting in your MCP settings file.

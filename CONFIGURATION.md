@@ -1,6 +1,6 @@
 # Configuration Guide
 
-This document outlines all configuration options for the Postman Documentation MCP Server.
+This document outlines all configuration options for the IntelligenceBank Postman Documentation MCP Server.
 
 ## Required Configuration
 
@@ -18,7 +18,17 @@ The Postman API key is required for authenticating requests to the Postman API. 
    - Collection read access
    - Workspace read access (if using workspace filtering)
 
-### 2. MCP Server Configuration
+### 2. Environment Selection
+
+**Required**: No (defaults to "prod")  
+**Environment Variable**: `IB_API_ENVIRONMENT`
+
+This server is configured to work exclusively with specific IntelligenceBank Postman collections. The environment setting determines which collection is used:
+
+- **prod** (default): Uses the IntelligenceBank Public API collection (`720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db`)
+- **staging**: Uses the IB API Staging collection (`720164-770480e5-494b-4b63-a6a7-c376624eba71`)
+
+### 3. MCP Server Configuration
 
 Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_mcp_settings.json`
 
@@ -31,15 +41,15 @@ Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryin
         "/path/to/postman-docs-server/build/index.js"
       ],
       "env": {
-        "POSTMAN_API_KEY": "your-postman-api-key"
+        "POSTMAN_API_KEY": "your-postman-api-key",
+        "IB_API_ENVIRONMENT": "prod"
       },
       "disabled": false,
       "alwaysAllow": [
-        "list_collections",
-        "search_collection",
-        "get_collection_structure",
-        "get_request_details",
-        "create_action"
+        "ib_api_search_collection",
+        "ib_api_get_collection_structure",
+        "ib_api_get_request_details",
+        "ib_api_create_action"
       ]
     }
   }
@@ -53,6 +63,7 @@ Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryin
 | `command` | Yes | Command to execute the server (should be "node") |
 | `args` | Yes | Array containing the path to the built server file |
 | `env.POSTMAN_API_KEY` | Yes | Your Postman API key |
+| `env.IB_API_ENVIRONMENT` | No | Environment to use (prod/staging, defaults to "prod") |
 | `disabled` | No | Whether the server is disabled (default: false) |
 | `alwaysAllow` | No | Array of tool names to allow without confirmation |
 
@@ -104,12 +115,16 @@ Common configuration issues and solutions:
 
 2. "Unknown tool" error
    - Check that the tool name is included in the `alwaysAllow` array
-   - Verify the tool name matches exactly
+   - Verify the tool name matches exactly (all tools now start with "ib_api_")
 
 3. Server not starting
    - Verify the path in `args` is correct
    - Ensure the server is built (`npm run build`)
    - Check file permissions
+
+4. Invalid environment setting
+   - Check that IB_API_ENVIRONMENT is set to either "prod" or "staging"
+   - The server will default to "prod" if the setting is missing or invalid
 
 ## Updating Configuration
 
