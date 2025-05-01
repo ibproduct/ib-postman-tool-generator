@@ -42,3 +42,6 @@ temp/
 # Debug files
 .debug/
 debug.log
+
+# Local installation instructions
+LOCAL.MD
