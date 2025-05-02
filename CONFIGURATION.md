@@ -1,6 +1,6 @@
 # Configuration Guide
 
-This document outlines all configuration options for the IntelligenceBank Postman Documentation MCP Server.
+This document outlines all configuration options for the IntelligenceBank API Documentation MCP Server.
 
 ## Required Configuration
 
@@ -30,15 +30,15 @@ This server is configured to work exclusively with specific IntelligenceBank Pos
 
 ### 3. MCP Server Configuration
 
-Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/cline_mcp_settings.json`
+Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`
 
 ```json
 {
   "mcpServers": {
-    "ib-postman-tool-generator": {
+    "ib-api-doc": {
       "command": "node",
       "args": [
-        "/path/to/postman-docs-server/build/index.js"
+        "/Users/charly/Documents/Cline/MCP/ib-api-doc/build/index.js"
       ],
       "env": {
         "POSTMAN_API_KEY": "your-postman-api-key",
@@ -46,10 +46,11 @@ Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryin
       },
       "disabled": false,
       "alwaysAllow": [
+        "ib_api_get_request_details",
+        "ib_api_create_action",
         "ib_api_search_collection",
         "ib_api_get_collection_structure",
-        "ib_api_get_request_details",
-        "ib_api_create_action"
+        "ib_api_list_response_examples"
       ]
     }
   }
@@ -69,15 +70,27 @@ Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryin
 
 ## Optional Configuration
 
-### 1. Rate Limiting
+### 1. Response Example Handling
+
+The server provides flexible handling of response examples through two complementary tools:
+
+- `ib_api_list_response_examples`: Lists available response examples for a request
+- `ib_api_get_request_details`: Gets request details with optional response inclusion:
+  - By default, responses are not included
+  - Use `includeResponses: true` to include all responses
+  - Use `includeResponses: true` with `responseId` for a specific response
+
+This configuration helps manage response payload sizes while maintaining access to all examples.
+
+### 2. Rate Limiting
 
 The server respects Postman's rate limits by default. No additional configuration is needed.
 
-### 2. Logging
+### 3. Logging
 
 The server logs errors to stderr by default. You can capture these logs by redirecting stderr when running the server.
 
-### 3. Development Mode
+### 4. Development Mode
 
 For development, you can run the server with automatic reloading:
 
@@ -85,7 +98,7 @@ For development, you can run the server with automatic reloading:
 npm run watch
 ```
 
-### 4. Debugging
+### 5. Debugging
 
 To inspect the server's capabilities:
 
@@ -125,6 +138,11 @@ Common configuration issues and solutions:
 4. Invalid environment setting
    - Check that IB_API_ENVIRONMENT is set to either "prod" or "staging"
    - The server will default to "prod" if the setting is missing or invalid
+
+5. Response example issues
+   - Verify `includeResponses` is set to true when using `responseId`
+   - Check that the response example ID exists for the request
+   - Consider using `ib_api_list_response_examples` first to get valid IDs
 
 ## Updating Configuration
 

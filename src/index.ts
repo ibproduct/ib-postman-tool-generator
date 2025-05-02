@@ -75,8 +75,8 @@ class PostmanDocsServer {
 
     this.server = new Server(
       {
-        name: 'ib-postman-tool-generator',
-        version: '0.2.0',
+        name: 'ib-api-doc',
+        version: '0.2.1',
       },
       {
         capabilities: {
@@ -146,9 +146,32 @@ class PostmanDocsServer {
                 type: 'string',
                 description: 'The request ID',
               },
+              includeResponses: {
+                type: 'boolean',
+                description: 'Whether to include response examples in the output (may increase response size significantly)',
+                default: false
+              },
+              responseId: {
+                type: 'string',
+                description: 'Optional: ID of a specific response example to include (requires includeResponses=true). If not provided but includeResponses is true, all responses will be included.'
+              }
             },
             required: ['requestId'],
           },
+        },
+        {
+          name: 'ib_api_list_response_examples',
+          description: 'List available response examples for a specific request',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              requestId: {
+                type: 'string',
+                description: 'The request ID'
+              }
+            },
+            required: ['requestId']
+          }
         },
         {
           name: 'ib_api_create_action',
@@ -179,6 +202,11 @@ class PostmanDocsServer {
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       switch (request.params.name) {
+        case 'ib_api_list_response_examples':
+          return this.handleListResponseExamples({
+            ...request.params.arguments,
+            collectionId: this.getCollectionId()
+          });
         case 'ib_api_search_collection':
           return this.handleSearchCollection({
             ...request.params.arguments,
@@ -424,6 +452,61 @@ class PostmanDocsServer {
     return structure;
   }
 
+  private async handleListResponseExamples(args: any): Promise<any> {
+    if (!args?.collectionId || !args?.requestId) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        'Missing required parameters: collectionId, requestId'
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.get(`/collections/${args.collectionId}`);
+      const collection: PostmanCollection = response.data.collection;
+      
+      const request = this.findRequestById(collection.item, args.requestId);
+      if (!request) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          `Request not found: ${args.requestId}`
+        );
+      }
+
+      const examples = (request.response || []).map(r => ({
+        id: r.id,
+        name: r.name,
+        code: r.code,
+        status: r.status
+      }));
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              requestId: args.requestId,
+              requestName: request.name,
+              examples
+            }, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error listing response examples: ${error.response?.data?.error || error.message}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+      throw error;
+    }
+  }
+
   private async handleGetRequestDetails(args: any): Promise<any> {
     if (!args?.collectionId || !args?.requestId) {
       throw new McpError(
@@ -466,7 +549,7 @@ class PostmanDocsServer {
                 id: args.collectionId,
                 name: collection.info.name,
               },
-              request: this.formatRequestDocumentation(request),
+              request: this.formatRequestDocumentation(request, args.includeResponses, args.responseId),
             }, null, 2),
           },
         ],
@@ -501,8 +584,8 @@ class PostmanDocsServer {
     return null;
   }
 
-  private formatRequestDocumentation(item: PostmanItem) {
-    return {
+  private formatRequestDocumentation(item: PostmanItem, includeResponses: boolean = false, responseId?: string) {
+    const doc = {
       id: item.id,
       name: item.name,
       method: item.request?.method,
@@ -510,8 +593,24 @@ class PostmanDocsServer {
       description: item.request?.description || '',
       headers: item.request?.header || [],
       body: item.request?.body,
-      responses: item.response || [],
     };
+
+    // Handle response examples based on parameters
+    if (includeResponses && item.response) {
+      if (responseId) {
+        // Include only the specified response example
+        const response = item.response.find(r => r.id === responseId);
+        if (response) {
+          return { ...doc, responses: [response] };
+        }
+        // If responseId is provided but not found, return without responses
+        return doc;
+      }
+      // Include all response examples
+      return { ...doc, responses: item.response };
+    }
+
+    return doc;
   }
 
   private async handleCreateAction(args: any): Promise<any> {
@@ -590,12 +689,6 @@ class PostmanDocsServer {
     language: string,
     framework: string
   ): string {
-    const baseUrl = request.url.host.join('.');
-    const path = request.url.path.join('/');
-    const method = request.method.toLowerCase();
-    const headers = request.header || [];
-    const body = request.body;
-
     if (language === 'python') {
       return this.generatePythonCode(name, request, framework);
     }

@@ -1,4 +1,4 @@
-# IB Postman Tool Generator
+# IB API Documentation
 
 A Model Context Protocol (MCP) server that provides tools for retrieving documentation from Postman collections and generating AI actions.
 
@@ -7,6 +7,10 @@ A Model Context Protocol (MCP) server that provides tools for retrieving documen
 - List and search Postman collections
 - Navigate collection structures
 - Get detailed request information
+- Flexible response example handling:
+  - List available response examples
+  - Get request details with or without examples
+  - Selective response example inclusion
 - Generate code actions from Postman requests
 - Optional integration with multiple AI frameworks
 - TypeScript/JavaScript code generation
@@ -22,8 +26,8 @@ A Model Context Protocol (MCP) server that provides tools for retrieving documen
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/ibproduct/ib-postman-tool-generator.git
-cd ib-postman-tool-generator
+git clone https://github.com/ibproduct/ib-api-doc.git
+cd ib-api-doc
 ```
 
 2. Install dependencies:
@@ -43,6 +47,35 @@ npm run build
 See the [Prompt Templates](PROMPTS.md) guide for detailed usage instructions and examples.
 
 ## Development
+
+### Development Workflow
+
+1. Set up development environment:
+```bash
+# Clone and set up the repository
+git clone https://github.com/ibproduct/ib-api-doc.git
+cd ib-api-doc
+npm install
+```
+
+2. Configure development server:
+- Create a development configuration in your MCP settings file
+- Point it to your local development build
+- Include all tools in the alwaysAllow array
+
+3. Development cycle:
+```bash
+# Make code changes
+npm run build  # Build the changes
+# Reload VSCode window to pick up new build
+# Test using the development server configuration
+# Repeat until satisfied with changes
+```
+
+4. Before committing:
+- Test all affected functionality
+- Update documentation if needed
+- Follow the git workflow below
 
 ### Git Workflow
 

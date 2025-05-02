@@ -1,17 +1,17 @@
 {
-  "name": "ib-postman-tool-generator",
-  "version": "0.1.0",
+  "name": "ib-api-doc",
+  "version": "0.2.1",
   "description": "MCP server for retrieving Postman documentation and generating AI actions",
   "private": true,
   "type": "module",
   "bin": {
-    "ib-postman-tool-generator": "./build/index.js"
+    "ib-api-doc": "./build/index.js"
   },
   "files": [
     "build"
   ],
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "build": "npx tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ibproduct/ib-postman-tool-generator.git"
+    "url": "git+https://github.com/ibproduct/ib-api-doc.git"
   },
   "keywords": [
     "postman",
@@ -33,9 +33,9 @@
   "author": "IntelligenceBank",
   "license": "UNLICENSED",
   "bugs": {
-    "url": "https://github.com/ibproduct/ib-postman-tool-generator/issues"
+    "url": "https://github.com/ibproduct/ib-api-doc/issues"
   },
-  "homepage": "https://github.com/ibproduct/ib-postman-tool-generator#readme",
+  "homepage": "https://github.com/ibproduct/ib-api-doc#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "0.6.0",
     "axios": "^1.7.9"
