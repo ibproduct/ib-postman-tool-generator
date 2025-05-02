@@ -120,14 +120,12 @@ interface ListResponseExamplesOutput {
 
 ### 4. ib_api_get_request_details
 
-Get detailed information about a specific request in the IntelligenceBank API collection.
+Get detailed information about a specific request in the IntelligenceBank API collection. For response examples, use `ib_api_list_response_examples`.
 
 **Input Schema:**
 ```typescript
 interface GetRequestDetailsInput {
   requestId: string;     // Request ID
-  includeResponses?: boolean;  // Whether to include response examples (default: false)
-  responseId?: string;   // Optional: ID of a specific response example to include (requires includeResponses=true)
 }
 ```
 
@@ -163,39 +161,6 @@ interface GetRequestDetailsOutput {
         value: string;
       }>;
     };
-    responses?: Array<{
-      id: string;
-      name: string;
-      originalRequest: {
-        method: string;
-        header: Array<{
-          key: string;
-          value: string;
-          description?: string;
-          type?: string;
-        }>;
-        url: {
-          raw: string;
-          host: string[];
-          path: string[];
-          query?: Array<{
-            key: string;
-            value: string;
-          }>;
-        };
-      };
-      status: string;
-      code: number;
-      _postman_previewlanguage: string;
-      header: Array<{
-        key: string;
-        value: string;
-        description?: string;
-        type?: string;
-      }>;
-      body?: string;
-      uid: string;
-    }>;
   };
 }
 ```
@@ -231,15 +196,12 @@ interface CreateActionOutput {
 
 ## Response Example Handling
 
-The server provides flexible handling of response examples through two complementary tools:
+The server provides dedicated tools for handling response examples:
 
-1. `ib_api_list_response_examples`: Get a lightweight list of available response examples for a request
-2. `ib_api_get_request_details`: Get request details with optional response example inclusion:
-   - By default, no response examples are included
-   - Set `includeResponses: true` to include all response examples
-   - Set `includeResponses: true` and provide a `responseId` to include only a specific example
+1. `ib_api_list_response_examples`: Get a list of available response examples for a request
+2. `ib_api_get_request_details`: Get request details (responses not included)
 
-This approach allows for efficient retrieval of response examples while managing response payload size.
+This separation ensures efficient retrieval of request details while maintaining access to response examples when needed.
 
 ## Error Handling
 

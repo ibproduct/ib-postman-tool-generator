@@ -1,6 +1,6 @@
 {
   "name": "ib-api-doc",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "MCP server for retrieving Postman documentation and generating AI actions",
   "private": true,
   "type": "module",

@@ -64,7 +64,7 @@ Example updated configuration:
         "ib_api_get_collection_structure",
         "ib_api_get_request_details",
         "ib_api_create_action",
-        "ib_api_list_response_examples"  // New response examples tool
+        "ib_api_list_response_examples"
       ]
     }
   }
@@ -91,7 +91,6 @@ Check that:
 - The correct version number is displayed
 - The expected tools are available
 - Any new configuration options are recognized
-- Response example handling works as expected
 
 ## Troubleshooting Update Issues
 
@@ -131,6 +130,14 @@ If the server won't start after an update:
 
 ## Breaking Changes in Recent Updates
 
+### Version 0.3.0
+
+- Removed response example handling from `ib_api_get_request_details`:
+  - Removed `includeResponses` parameter
+  - Removed `responseId` parameter
+  - Response examples are now exclusively handled by `ib_api_list_response_examples`
+- Updated tool descriptions to better guide users to the appropriate tools
+
 ### Version 0.2.1
 
 - Added new `ib_api_list_response_examples` tool for listing response examples
@@ -151,17 +158,13 @@ If the server won't start after an update:
 
 ## Migration Notes
 
-### Upgrading to 0.2.1
+### Upgrading to 0.3.0
 
-1. Update your MCP settings:
-   - Rename server from "ib-postman-tool-generator" to "ib-api-doc"
-   - Update installation paths to use new name
-   - Include the new `ib_api_list_response_examples` tool
-2. Review any code using `ib_api_get_request_details`:
-   - Add `includeResponses: true` where response examples are needed
-   - Consider using `ib_api_list_response_examples` first to get response IDs
-   - Update any code that assumed responses were included by default
-3. Test response example handling after the update:
-   - Try listing available examples
-   - Verify request details with and without responses
-   - Test selective response inclusion
+1. Update your code to use the new response example workflow:
+   - Use `ib_api_list_response_examples` to get response example information
+   - Remove any usage of `includeResponses` and `responseId` parameters
+   - Update any code that relied on responses being included in request details
+2. Test your code changes:
+   - Verify request details are retrieved correctly
+   - Verify response examples are accessed through the dedicated tool
+   - Update any error handling for the new workflow
