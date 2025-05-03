@@ -7,10 +7,11 @@ A Model Context Protocol (MCP) server that provides tools for retrieving documen
 - List and search Postman collections
 - Navigate collection structures
 - Get detailed request information
-- Flexible response example handling:
-  - List available response examples
-  - Get request details with or without examples
-  - Selective response example inclusion
+| - Comprehensive response example handling:
+|   - List available response examples
+|   - Get request details (focused on request information)
+|   - Get detailed response example information
+|   - Efficient workflow for accessing example data
 - Generate code actions from Postman requests
 - Optional integration with multiple AI frameworks
 - TypeScript/JavaScript code generation

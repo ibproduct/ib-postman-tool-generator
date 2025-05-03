@@ -151,7 +151,86 @@ Expected Response:
 }
 ```
 
-## 4. Create Action (ib_api_create_action)
+## 4. List Response Examples (ib_api_list_response_examples)
+
+List available response examples for a specific request.
+
+### Base Template
+```
+List response examples for request {request_id}.
+```
+
+### Example
+```
+List response examples for request req-123.
+```
+
+Expected Response:
+```json
+{
+  "requestId": "req-123",
+  "requestName": "Login",
+  "examples": [
+    {
+      "id": "example-123",
+      "name": "200 OK - Successful Login",
+      "code": 200,
+      "status": "OK"
+    }
+  ]
+}
+```
+
+## 5. Get Response Details (ib_api_get_response_details)
+
+Get detailed information about a specific response example.
+
+### Base Template
+```
+Get response details for request {request_id}, example {example_id}.
+```
+
+### Example
+```
+Get response details for request req-123, example example-123.
+```
+
+Expected Response:
+```json
+{
+  "workspace": {
+    "id": "720164",
+    "name": "IntelligenceBank",
+    "type": "team"
+  },
+  "collection": {
+    "id": "720164-8af8ff92-7e1e-4ebe-b39a-9789e98063db",
+    "name": "IntelligenceBank Public API"
+  },
+  "request": {
+    "id": "req-123",
+    "name": "Login"
+  },
+  "response": {
+    "id": "example-123",
+    "name": "200 OK - Successful Login",
+    "code": 200,
+    "status": "OK",
+    "body": {
+      "token": "example-token",
+      "expires_in": 3600
+    },
+    "headers": [
+      {
+        "key": "Content-Type",
+        "value": "application/json"
+      }
+    ]
+  }
+}
+```
+
+## 6. Create Action (ib_api_create_action)
 
 Generate a code action from a Postman request in the IntelligenceBank API collection.
 
@@ -186,6 +265,18 @@ Expected Response:
 ```
 
 ## Common Workflows
+
+### Working with Response Examples
+
+1. List response examples for a request:
+```
+List response examples for request {request_id}.
+```
+
+2. Get specific example details:
+```
+Get response details for request {request_id}, example {example_id_from_step_1}.
+```
 
 ### Finding and Using a Request
 

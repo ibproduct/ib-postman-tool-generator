@@ -130,13 +130,23 @@ If the server won't start after an update:
 
 ## Breaking Changes in Recent Updates
 
-### Version 0.3.0
+| ### Version 0.3.1
 
-- Removed response example handling from `ib_api_get_request_details`:
-  - Removed `includeResponses` parameter
-  - Removed `responseId` parameter
-  - Response examples are now exclusively handled by `ib_api_list_response_examples`
-- Updated tool descriptions to better guide users to the appropriate tools
+| - Added new `ib_api_get_response_details` tool:
+|   - Get detailed information about specific response examples
+|   - Includes response body, headers, and status information
+|   - Complements existing response example handling tools
+| - Enhanced response example workflow:
+|   1. Use `ib_api_list_response_examples` to get available examples
+|   2. Use `ib_api_get_response_details` to get specific example details
+
+| ### Version 0.3.0
+
+| - Removed response example handling from `ib_api_get_request_details`:
+|   - Removed `includeResponses` parameter
+|   - Removed `responseId` parameter
+|   - Response examples are now exclusively handled by `ib_api_list_response_examples`
+| - Updated tool descriptions to better guide users to the appropriate tools
 
 ### Version 0.2.1
 

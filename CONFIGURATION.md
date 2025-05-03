@@ -50,7 +50,8 @@ Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryin
         "ib_api_create_action",
         "ib_api_search_collection",
         "ib_api_get_collection_structure",
-        "ib_api_list_response_examples"
+        "ib_api_list_response_examples",
+        "ib_api_get_response_details"
       ]
     }
   }
@@ -72,15 +73,17 @@ Location: `~/Library/Application Support/Code/User/globalStorage/rooveterinaryin
 
 ### 1. Response Example Handling
 
-The server provides flexible handling of response examples through two complementary tools:
+The server provides a comprehensive workflow for handling response examples through three complementary tools:
 
-- `ib_api_list_response_examples`: Lists available response examples for a request
-- `ib_api_get_request_details`: Gets request details with optional response inclusion:
-  - By default, responses are not included
-  - Use `includeResponses: true` to include all responses
-  - Use `includeResponses: true` with `responseId` for a specific response
+1. `ib_api_list_response_examples`: Lists available response examples for a request
+2. `ib_api_get_request_details`: Gets request details (responses not included)
+3. `ib_api_get_response_details`: Gets detailed information about a specific response example
 
-This configuration helps manage response payload sizes while maintaining access to all examples.
+Typical workflow:
+1. Use `ib_api_list_response_examples` to get available example IDs
+2. Use `ib_api_get_response_details` to fetch specific example details
+
+This separation helps manage response payload sizes while providing detailed access to examples when needed.
 
 ### 2. Rate Limiting
 
@@ -140,9 +143,9 @@ Common configuration issues and solutions:
    - The server will default to "prod" if the setting is missing or invalid
 
 5. Response example issues
-   - Verify `includeResponses` is set to true when using `responseId`
-   - Check that the response example ID exists for the request
-   - Consider using `ib_api_list_response_examples` first to get valid IDs
+    - Ensure both requestId and exampleId are valid when using `ib_api_get_response_details`
+    - Use `ib_api_list_response_examples` first to get valid example IDs
+    - Check that the example exists for the specified request
 
 ## Updating Configuration
 

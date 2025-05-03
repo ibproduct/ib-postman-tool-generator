@@ -192,16 +192,60 @@ interface CreateActionOutput {
   };
   code: string;  // Generated action code
 }
-```
+| ```
 
-## Response Example Handling
+| ### 6. ib_api_get_response_details
 
-The server provides dedicated tools for handling response examples:
+| Get detailed information about a specific response example.
 
-1. `ib_api_list_response_examples`: Get a list of available response examples for a request
-2. `ib_api_get_request_details`: Get request details (responses not included)
+| **Input Schema:**
+| ```typescript
+| interface GetResponseDetailsInput {
+|   requestId: string;     // Request ID
+|   exampleId: string;     // Response example ID
+| }
+| ```
 
-This separation ensures efficient retrieval of request details while maintaining access to response examples when needed.
+| **Output Schema:**
+| ```typescript
+| interface GetResponseDetailsOutput {
+|   workspace: {
+|     id: string;
+|     name: string;
+|     type: string;
+|   };
+|   collection: {
+|     id: string;
+|     name: string;
+|   };
+|   request: {
+|     id: string;
+|     name: string;
+|   };
+|   response: {
+|     id: string;
+|     name: string;
+|     code: number;
+|     status: string;
+|     body: any;
+|     headers: Array<{
+|       key: string;
+|       value: string;
+|       description?: string;
+|     }>;
+|   };
+| }
+| ```
+
+| ## Response Example Handling
+
+| The server provides dedicated tools for handling response examples:
+
+| 1. `ib_api_list_response_examples`: Get a list of available response examples for a request
+| 2. `ib_api_get_request_details`: Get request details (responses not included)
+| 3. `ib_api_get_response_details`: Get detailed information about a specific response example
+
+| This separation ensures efficient retrieval of request details while maintaining access to response examples when needed.
 
 ## Error Handling
 
