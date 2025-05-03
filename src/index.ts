@@ -109,6 +109,24 @@ class PostmanDocsServer {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
       tools: [
         {
+          name: 'ib_api_get_response_details',
+          description: 'Get detailed information about a specific response example',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              requestId: {
+                type: 'string',
+                description: 'The request ID',
+              },
+              exampleId: {
+                type: 'string',
+                description: 'The response example ID',
+              }
+            },
+            required: ['requestId', 'exampleId'],
+          },
+        },
+        {
           name: 'ib_api_search_collection',
           description: 'Search within the IntelligenceBank API collection for folders or requests by name',
           inputSchema: {
@@ -193,6 +211,11 @@ class PostmanDocsServer {
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       switch (request.params.name) {
+        case 'ib_api_get_response_details':
+          return this.handleGetResponseDetails({
+            ...request.params.arguments,
+            collectionId: this.getCollectionId()
+          });
         case 'ib_api_list_response_examples':
           return this.handleListResponseExamples({
             ...request.params.arguments,
@@ -585,6 +608,88 @@ class PostmanDocsServer {
       headers: item.request?.header || [],
       body: item.request?.body,
     };
+  }
+
+  private async handleGetResponseDetails(args: any): Promise<any> {
+    if (!args?.collectionId || !args?.requestId || !args?.exampleId) {
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        'Missing required parameters: collectionId, requestId, exampleId'
+      );
+    }
+
+    try {
+      const response = await this.axiosInstance.get(`/collections/${args.collectionId}`);
+      const collection: PostmanCollection = response.data.collection;
+      
+      // Get workspace info
+      const workspaceId = args.collectionId.split('-')[0];
+      const workspace = await this.getWorkspaceInfo(workspaceId);
+      
+      const request = this.findRequestById(collection.item, args.requestId);
+      if (!request) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          `Request not found: ${args.requestId}`
+        );
+      }
+
+      const example = request.response?.find(r => r.id === args.exampleId);
+      if (!example) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          `Response example not found: ${args.exampleId}`
+        );
+      }
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              workspace: workspace ? {
+                id: workspace.id,
+                name: workspace.name,
+                type: workspace.type,
+              } : {
+                id: workspaceId,
+                name: 'Unknown',
+                type: 'unknown',
+              },
+              collection: {
+                id: args.collectionId,
+                name: collection.info.name,
+              },
+              request: {
+                id: request.id,
+                name: request.name
+              },
+              response: {
+                id: example.id,
+                name: example.name,
+                code: example.code,
+                status: example.status,
+                body: example.body,
+                headers: example.header || []
+              }
+            }, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Error getting response details: ${error.response?.data?.error || error.message}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+      throw error;
+    }
   }
 
   private async handleCreateAction(args: any): Promise<any> {
